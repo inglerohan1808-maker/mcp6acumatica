@@ -28,12 +28,18 @@
 	// Acumatica instance configuration. Edit these for your deployment
 	// (or leave the placeholders and override via the dashboard after deploy).
 	"vars": {
-		"ACUMATICA_URL": "https://your-instance.acumatica.com",
-		"ACUMATICA_TENANT": "YourTenant",
-		"ACUMATICA_ENDPOINT_VERSION": "25.200.001",
-		"ACUMATICA_ENDPOINT_NAME": "Default",
-		"ACUMATICA_MAX_RECORDS": "1000",
-		"ACUMATICA_CANARY_GI": "MCPAccess"
+		{
+  // ...
+  "vars": {
+    "ACUMATICA_CANARY_GI": "MCPAccess",
+    "ACUMATICA_ENDPOINT_NAME": "Default",
+    "ACUMATICA_ENDPOINT_VERSION": "25.200.001",
+    "ACUMATICA_MAX_RECORDS": "1000",
+    "ACUMATICA_TENANT": "Company",
+    "ACUMATICA_URL": "https://ewpind-dev13.eworkplaceapps.in/PMS26R2/"
+  },
+  // ...
+}
 	},
 
 	// KV namespaces. TOKEN_STORE holds per-user Acumatica tokens, OAuth
