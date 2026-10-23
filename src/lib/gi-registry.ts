@@ -205,7 +205,11 @@ export interface FeedFieldRow {
   SchemaField?: string;
   /** Target column's caption (MCPGIFields "Caption"). An *override*, usually
    *  NULL — see the alignment note on resolveFields. */
-  Caption?: string;
+  // Fix: Caption can be null in Acumatica OData responses and mock fixtures.
+  // Allowed string | null to prevent type incompatibility when null is passed.
+  // Old code commented because it did not permit null:
+  // Caption?: string;
+  Caption?: string | null;
   /** Curated per-column description (MCPGIFields "AIDescription"). */
   AIDescription?: string;
   /** Target column's design line number (MCPGIFields "LineNbr"). NOT the grid

@@ -40,7 +40,10 @@ function makeStore(seed: Record<string, string> = {}) {
     },
     async list(opts) {
       const prefix = opts?.prefix ?? "";
-      return { keys: [...data.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) };
+      // Fix: IKeyValueStore.list requires 'list_complete: boolean' in return type.
+      // Added list_complete: true to satisfy interface contract in mock store.
+      // return { keys: [...data.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) };
+      return { keys: [...data.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })), list_complete: true };
     },
   };
   return { store, data, puts };

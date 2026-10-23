@@ -503,8 +503,12 @@ test("assembleRegistry: FS-Licenses shape — captioned hoist keys resolve the w
       <Property Name="ExpirationDate" Type="Edm.DateTimeOffset"/>
       <Property Name="EmployeeName" Type="Edm.String"/>
     </EntityType>`);
+  // Fix: Caption is string | null in mock rows, but FeedFieldRow.Caption expected string | undefined.
+  // Coalesce null to undefined so it satisfies strict FeedFieldRow typing.
+  // Old logic commented because Caption had type string | null which conflicted with optional string:
+  // const row = (n: number, field: string, Caption: string | null) => ({ Name: "FS-Licenses", Field: field, Caption, LineNbr: n, SortOrder: n, IsActive: true, AIDescription: `d${n}` });
   const row = (n: number, field: string, Caption: string | null) => ({
-    Name: "FS-Licenses", Field: field, Caption, LineNbr: n, SortOrder: n,
+    Name: "FS-Licenses", Field: field, Caption: Caption ?? undefined, LineNbr: n, SortOrder: n,
     IsActive: true, AIDescription: `d${n}`,
   });
   const reg = assembleRegistry({
