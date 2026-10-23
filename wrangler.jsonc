@@ -32,7 +32,10 @@
 		"ACUMATICA_URL": "https://announcement-auction-classic-magazines.trycloudflare.com/Acumatica26R2",
 		"ACUMATICA_TENANT": "Company",
 		"ACUMATICA_ENDPOINT_VERSION": "25.200.001",
-		"ACUMATICA_ENDPOINT_NAME": "Default",
+		// Old logic commented because Acumatica restricts extending system endpoint 'Default' under the same name.
+		// "ACUMATICA_ENDPOINT_NAME": "Default",
+		// Fix: Point to custom extended endpoint 'EWPMEndPoint' which extends Default/25.200.001 with PMS entities.
+		"ACUMATICA_ENDPOINT_NAME": "EWPMEndPoint",
 		"ACUMATICA_MAX_RECORDS": "1000",
 		"ACUMATICA_CANARY_GI": "MCPAccess"
 	},
