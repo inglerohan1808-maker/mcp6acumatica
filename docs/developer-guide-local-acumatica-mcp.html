@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acumatica Developer Guide: Localhost MCP Integration</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 14mm 14mm 14mm 14mm;
+            @top-right {
+                content: "Acumatica MCP Developer Guide";
+                font-size: 8pt;
+                color: #718096;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            @bottom-left {
+                content: "Confidential - For Internal Development Team Use Only";
+                font-size: 7.5pt;
+                color: #a0aec0;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+                color: #718096;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #1a202c;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            font-size: 9.5pt;
+        }
+
+        /* Cover / Header section */
+        .doc-header {
+            border-bottom: 3px solid #2b6cb0;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .doc-title {
+            margin: 0;
+            font-size: 20pt;
+            font-weight: 800;
+            color: #1a365d;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .doc-subtitle {
+            margin: 6px 0 0 0;
+            font-size: 11pt;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .badge-bar {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-blue { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+        .badge-green { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+        .badge-purple { background: #faf5ff; color: #6b46c1; border: 1px solid #e9d8fd; }
+        .badge-amber { background: #fffaf0; color: #c05621; border: 1px solid #feebc8; }
+
+        .meta-box {
+            text-align: right;
+            font-size: 8pt;
+            color: #718096;
+            line-height: 1.4;
+        }
+
+        /* Section layout */
+        .section {
+            margin-bottom: 18px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 12.5pt;
+            color: #1a365d;
+            margin: 0 0 8px 0;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h3 {
+            font-size: 10.5pt;
+            color: #2b6cb0;
+            margin: 10px 0 4px 0;
+            font-weight: 700;
+        }
+
+        .step-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: #2b6cb0;
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 9pt;
+            font-weight: 800;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+            color: #2d3748;
+        }
+
+        /* Visual Architecture Flow */
+        .diagram-container {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 12px 10px;
+            margin: 10px 0 14px 0;
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .flow-grid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .flow-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 6px 6px;
+            flex: 1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            text-align: center;
+        }
+
+        .flow-card.accent {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .flow-card.local {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .flow-card-title {
+            font-weight: 700;
+            font-size: 8pt;
+            color: #0f172a;
+        }
+
+        .flow-card-sub {
+            font-size: 7pt;
+            color: #64748b;
+            margin-top: 2px;
+            font-family: "Cascadia Code", "Consolas", monospace;
+        }
+
+        .flow-arrow {
+            color: #94a3b8;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-left: 4px solid #2b6cb0;
+            background: #ebf8ff;
+            padding: 8px 12px;
+            border-radius: 0 5px 5px 0;
+            margin: 8px 0;
+            font-size: 8.8pt;
+            line-height: 1.45;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            color: #2b6cb0;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .callout-warning {
+            border-left-color: #dd6b20;
+            background: #fffaf0;
+        }
+        .callout-warning .callout-title { color: #dd6b20; }
+
+        .callout-success {
+            border-left-color: #38a169;
+            background: #f0fff4;
+        }
+        .callout-success .callout-title { color: #38a169; }
+
+        .callout-danger {
+            border-left-color: #e53e3e;
+            background: #fff5f5;
+        }
+        .callout-danger .callout-title { color: #e53e3e; }
+
+        /* Code & Pre */
+        pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 8pt;
+            line-height: 1.4;
+            overflow-x: auto;
+            margin: 6px 0 8px 0;
+            border: 1px solid #1e293b;
+            font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+        }
+
+        code.inline {
+            background: #f1f5f9;
+            color: #b91c1c;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 8.5pt;
+            font-family: "Cascadia Code", "Consolas", monospace;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0 10px 0;
+            font-size: 8.5pt;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 9px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        tr:nth-child(even) td {
+            background: #fafafa;
+        }
+
+        /* Checklists */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+            margin: 6px 0 10px 0;
+        }
+
+        .checklist li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 5px;
+            font-size: 9pt;
+        }
+
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #16a34a;
+            font-weight: 800;
+            font-size: 9.5pt;
+        }
+
+        ol, ul {
+            margin: 4px 0 8px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .page-break {
+            page-break-before: always;
+            break-before: always;
+        }
+
+        .footer-note {
+            margin-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            font-size: 7.5pt;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="doc-header">
+        <div>
+            <h1 class="doc-title">Acumatica MCP Developer Guide</h1>
+            <div class="doc-subtitle">Connecting Local IIS Acumatica Instances to Cloudflare Worker MCP Server via Cloudflare Tunnel</div>
+            <div class="badge-bar">
+                <span class="badge badge-blue">Developer Runbook</span>
+                <span class="badge badge-purple">MCP 0.53.0</span>
+                <span class="badge badge-green">Acumatica xRP</span>
+                <span class="badge badge-amber">Cloudflare Workers</span>
+            </div>
+        </div>
+        <div class="meta-box">
+            <strong>Target Audience:</strong> Development Team<br>
+            <strong>Local Environment:</strong> Windows IIS / Localhost<br>
+            <strong>Security:</strong> OAuth 2.0 / OIDC IdentityServer<br>
+            <strong>Doc Version:</strong> 1.0 (Production Ready)
+        </div>
+    </div>
+
+    <!-- Section: Introduction & Architectural Overview -->
+    <div class="section">
+        <h2>1. Architecture & Why This Tunnel is Needed</h2>
+        <p>
+            When building and testing Acumatica ERP customizations (such as PMS modules, custom DAC extensions, or Generic Inquiries), developers execute code locally against their dedicated IIS development instances (e.g. <code>http://localhost/Acumatica26R2/</code>).
+        </p>
+        <p>
+            The <strong>Model Context Protocol (MCP) Server</strong> runs in the cloud as a Cloudflare Worker (e.g. <code>mcp6acumatica.inglerohan1808.workers.dev</code>) and interfaces with AI developer assistants (Claude Desktop, Cursor, Antigravity). Cloudflare Workers operate in a public serverless runtime and cannot reach private loopback addresses (<code>localhost</code> or private <code>192.168.x.x</code> subnets).
+        </p>
+        <p>
+            <strong>Cloudflare Tunnel (<code>cloudflared</code>)</strong> solves this by establishing a lightweight, encrypted, outbound-only tunnel from your local machine to Cloudflare's edge network. This exposes your local Acumatica instance over a secure, publicly accessible HTTPS domain without modifying firewall rules, opening router ports, or requiring a static IP.
+        </p>
+
+        <!-- Diagram -->
+        <div class="diagram-container">
+            <div class="diagram-title">End-to-End Hybrid Communication Topology</div>
+            <div class="flow-grid">
+                <div class="flow-card">
+                    <div class="flow-card-title">AI Client</div>
+                    <div class="flow-card-sub">Claude / Cursor</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-card accent">
+                    <div class="flow-card-title">Cloudflare Worker</div>
+                    <div class="flow-card-sub">mcp6acumatica (DO)</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-card accent">
+                    <div class="flow-card-title">Cloudflare Edge</div>
+                    <div class="flow-card-sub">trycloudflare.com</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-card local">
+                    <div class="flow-card-title">cloudflared.exe</div>
+                    <div class="flow-card-sub">Local Tunnel Daemon</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-card local">
+                    <div class="flow-card-title">Local IIS Web</div>
+                    <div class="flow-card-sub">localhost/Acumatica26R2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Prerequisites -->
+    <div class="section">
+        <h2>2. Developer Prerequisites Checklist</h2>
+        <ul class="checklist">
+            <li><strong>Local Acumatica Instance:</strong> Configured in IIS, running and logged in at <code>http://localhost/&lt;InstanceName&gt;/</code> (e.g., <code>http://localhost/Acumatica26R2/</code>).</li>
+            <li><strong>Anonymous Authentication Enabled in IIS:</strong> Open IIS Manager ➔ Select your Acumatica Site/Application ➔ Authentication ➔ Ensure <strong>Anonymous Authentication</strong> is <code>Enabled</code> (needed for OIDC & REST endpoints).</li>
+            <li><strong>Node.js v18+ Installed:</strong> Required to run <code>npx cloudflared</code>, or install the official <code>cloudflared.exe</code> binary.</li>
+            <li><strong>Acumatica Administrator Access:</strong> Permissions to navigate to screen <strong>Connected Applications (SM303010)</strong> and <strong>Generic Inquiry (SM208000)</strong>.</li>
+            <li><strong>Cloudflare Account & Worker Access:</strong> Access to the team's Cloudflare Worker dashboard (or personal worker deploy).</li>
+        </ul>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section: Step 1 - Start Tunnel -->
+    <div class="section">
+        <h2><span class="step-circle">1</span> Launching Cloudflare Tunnel on Your PC</h2>
+        <p>Open a PowerShell terminal on your Windows development workstation and run the Quick Tunnel command:</p>
+        
+        <pre><code># Start outbound tunnel pointing to your local IIS instance (port 80)
+npx cloudflared tunnel --url http://localhost</code></pre>
+
+        <p>Cloudflare will establish the tunnel and output connection banners:</p>
+        <pre><code>2026-10-23T06:05:12Z INF +--------------------------------------------------------------------------------------------+
+2026-10-23T06:05:12Z INF |  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |
+2026-10-23T06:05:12Z INF |  https://announcement-auction-classic-magazines.trycloudflare.com                           |
+2026-10-23T06:05:12Z INF +--------------------------------------------------------------------------------------------+
+2026-10-23T06:05:12Z INF Route propagating, please allow up to 20 seconds before accessing this URL...</code></pre>
+
+        <div class="callout callout-success">
+            <div class="callout-title">Verifying Tunnel & IdentityServer Health</div>
+            Open the tunnel URL joined with your Acumatica instance name and IdentityServer discovery endpoint in a browser:
+            <br>
+            <code>https://&lt;your-tunnel-subdomain&gt;.trycloudflare.com/Acumatica26R2/identity/.well-known/openid-configuration</code>
+            <br>
+            <strong>Expected Output:</strong> A valid JSON payload containing <code>authorization_endpoint</code>, <code>token_endpoint</code>, and supported scopes. If this responds, your local Acumatica is reachable by Cloudflare!
+        </div>
+
+        <div class="callout callout-warning">
+            <div class="callout-title">Developer Rule: Keep the Terminal Running</div>
+            Quick Tunnels are ephemeral and remain active only as long as this PowerShell process runs. Do not close this terminal while developing.
+        </div>
+    </div>
+
+    <!-- Section: Step 2 - Acumatica Connected Applications -->
+    <div class="section">
+        <h2><span class="step-circle">2</span> Configuring Acumatica Connected Applications (SM303010)</h2>
+        <p>Acumatica's built-in IdentityServer authenticates users via OAuth 2.0 Authorization Code flow. Configure it as follows:</p>
+
+        <ol>
+            <li>In your local Acumatica instance, search for and open screen <strong>Connected Applications (SM303010)</strong>.</li>
+            <li>Click <strong>+ (Add New Record)</strong> or select an existing MCP application.</li>
+            <li>Fill in the header fields:
+                <ul>
+                    <li><strong>Client Name:</strong> <code>Cloudflare MCP Worker</code></li>
+                    <li><strong>OAuth Flow:</strong> <code>Authorization Code</code></li>
+                </ul>
+            </li>
+            <li>Under <strong>Secrets</strong>:
+                <ul>
+                    <li>Click <strong>New Secret</strong>. A popup displays your secret string.</li>
+                    <li><strong>Copy this secret immediately to a secure note</strong> (it cannot be viewed again once closed).</li>
+                </ul>
+            </li>
+            <li>Switch to the <strong>REDIRECT URIS</strong> tab:
+                <ul>
+                    <li>Click <strong>+</strong> and enter your Cloudflare Worker's callback endpoint:</li>
+                    <li><code>https://mcp6acumatica.inglerohan1808.workers.dev/callback</code></li>
+                </ul>
+            </li>
+            <li>Switch to the <strong>SCOPES</strong> tab:
+                <ul>
+                    <li>Ensure scopes <code>api</code> and <code>offline_access</code> are present and allowed.</li>
+                </ul>
+            </li>
+            <li>Click <strong>Save</strong> (Disk icon).</li>
+            <li>Note down your <strong>Client ID</strong>:
+                <br>Format: <code>&lt;GUID&gt;@&lt;TenantName&gt;</code> (e.g., <code>6D2DCD41-09F9-6EB8-6147-ED52F132EFE2@Company</code>).</li>
+        </ol>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Field</th>
+                    <th style="width: 45%;">Value</th>
+                    <th style="width: 30%;">Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>OAuth Flow</strong></td>
+                    <td><code>Authorization Code</code></td>
+                    <td>Standard interactive user login flow.</td>
+                </tr>
+                <tr>
+                    <td><strong>Redirect URI</strong></td>
+                    <td><code>https://&lt;worker-domain&gt;/callback</code></td>
+                    <td>Where IdentityServer sends the authorization code.</td>
+                </tr>
+                <tr>
+                    <td><strong>Client ID</strong></td>
+                    <td><code>&lt;GUID&gt;@&lt;Tenant&gt;</code></td>
+                    <td>Identifies the application and login tenant.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section: Step 3 - Cloudflare Worker Configuration -->
+    <div class="section">
+        <h2><span class="step-circle">3</span> Updating Cloudflare Worker Variables & Secrets</h2>
+        <p>Now configure your Cloudflare Worker so that it forwards API calls and authentication requests through your local tunnel:</p>
+
+        <ol>
+            <li>Log into the <a href="https://dash.cloudflare.com" style="color: #2b6cb0; text-decoration: none;"><strong>Cloudflare Dashboard</strong></a>.</li>
+            <li>Go to <strong>Workers & Pages</strong> ➔ Select your MCP Worker (e.g., <strong><code>mcp6acumatica</code></strong>).</li>
+            <li>Click <strong>Settings</strong> ➔ <strong>Variables and secrets</strong>.</li>
+            <li>Update the three critical configuration variables:</li>
+        </ol>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Variable Name</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 55%;">Value to Set</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong><code>ACUMATICA_URL</code></strong></td>
+                    <td>Variable</td>
+                    <td>Your tunnel URL + instance virtual directory:<br>
+                        <code>https://announcement-auction-classic-magazines.trycloudflare.com/Acumatica26R2</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><code>ACUMATICA_CLIENT_ID</code></strong></td>
+                    <td>Variable</td>
+                    <td>Your Client ID from SM303010:<br>
+                        <code>6D2DCD41-09F9-6EB8-6147-ED52F132EFE2@Company</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><code>ACUMATICA_CLIENT_SECRET</code></strong></td>
+                    <td>Secret</td>
+                    <td>Click <em>Edit</em> or <em>Add Secret</em> and paste the secret generated from SM303010.</td>
+                </tr>
+                <tr>
+                    <td><strong><code>ACUMATICA_TENANT</code></strong></td>
+                    <td>Variable</td>
+                    <td>Your login tenant name (e.g., <code>Company</code>).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout callout-success">
+            <div class="callout-title">Deploy & Verify Runtime</div>
+            Click <strong>Save and Deploy</strong>. Cloudflare propagates the new variables to all global edge points within 2-3 seconds.
+        </div>
+    </div>
+
+    <!-- Section: Step 4 - Access Gate & Canary GI -->
+    <div class="section">
+        <h2><span class="step-circle">4</span> Configuring the Access Gate (MCPAccess Canary GI)</h2>
+        <p>
+            MCP4Acumatica includes an **access gate** to safeguard company ERP data: during login, the server verifies whether the authenticating user has permissions to read a designated canary Generic Inquiry (default name: <code>MCPAccess</code>).
+        </p>
+        <ol>
+            <li>In Acumatica, navigate to <strong>Generic Inquiry (SM208000)</strong>.</li>
+            <li>Create an inquiry named <code>MCPAccess</code> (or your custom name matching <code>ACUMATICA_CANARY_GI</code>).</li>
+            <li>Add any simple table (e.g. <code>Company</code> or <code>Branch</code>) with one field.</li>
+            <li>Check the box: <strong>Expose via OData</strong>.</li>
+            <li>Under <strong>Access Rights by Screen (SM201020)</strong>, ensure your developer user or a marker role (e.g. <code>MCP Access</code>) has at least <em>Granted (Read)</em> access to this inquiry.</li>
+        </ol>
+    </div>
+
+    <!-- Section: Step 5 - AI Client Configuration -->
+    <div class="section">
+        <h2><span class="step-circle">5</span> Registering MCP in AI Clients & First Login</h2>
+        <p>Add the server endpoint to your AI client's configuration file:</p>
+
+        <h3>Claude Desktop Configuration (`claude_desktop_config.json`):</h3>
+        <pre><code>{
+  "mcpServers": {
+    "acumatica-local": {
+      "url": "https://mcp6acumatica.inglerohan1808.workers.dev/sse"
+    }
+  }
+}</code></pre>
+
+        <h3>Cursor / VS Code MCP Configuration:</h3>
+        <p>Add a new SSE server with URL: <code>https://mcp6acumatica.inglerohan1808.workers.dev/sse</code></p>
+
+        <h3>First-Time Authentication Walkthrough:</h3>
+        <ol>
+            <li>Start a conversation in Claude or Cursor and ask: <em>"List my Acumatica inquiries"</em> or <em>"Describe customer schema"</em>.</li>
+            <li>The AI client detects unauthenticated state and launches an OAuth login prompt in your default browser.</li>
+            <li>Notice the address bar points to your secure Cloudflare Tunnel:
+                <br><code>https://&lt;tunnel-subdomain&gt;.trycloudflare.com/Acumatica26R2/identity/connect/authorize?...</code></li>
+            <li>Sign in using your local Acumatica credentials (e.g. <code>admin</code>).</li>
+            <li>Click <strong>Authorize / Accept</strong>. You will be redirected back to the Cloudflare Worker callback.</li>
+            <li>Tokens are encrypted and stored in Cloudflare KV, and your AI assistant now has access to your local Acumatica instance!</li>
+        </ol>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- Section: Step 6 - Developer Diagnostic & Preflight -->
+    <div class="section">
+        <h2><span class="step-circle">6</span> Testing with the Preflight Diagnostic</h2>
+        <p>
+            MCP4Acumatica includes a built-in preflight diagnostic tool to verify all connection layers in one click without guessing:
+        </p>
+        <p>
+            Navigate in your browser to:
+            <br>
+            <code>https://mcp6acumatica.inglerohan1808.workers.dev/docs/admin/preflight</code>
+        </p>
+        <p>Log in with your <code>ADMIN_SECRET</code>. The diagnostic automatically validates:</p>
+        <ul class="checklist">
+            <li><strong>Acumatica Reachability:</strong> HTTP ping to the tunnel URL.</li>
+            <li><strong>OIDC Discovery:</strong> Validates JSON schema from <code>identity/.well-known/openid-configuration</code>.</li>
+            <li><strong>Connected Application Credentials:</strong> Probes token endpoint with Client ID and Secret.</li>
+            <li><strong>Contract API Endpoint:</strong> Probes <code>entity/Default/25.200.001</code> (or configured version).</li>
+            <li><strong>Canary GI:</strong> Confirms OData read access for <code>MCPAccess</code>.</li>
+        </ul>
+    </div>
+
+    <!-- Section: Step 7 - Developer Troubleshooting Matrix -->
+    <div class="section">
+        <h2>7. Troubleshooting Guide for Developers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Error / Symptom</th>
+                    <th style="width: 35%;">Probable Root Cause</th>
+                    <th style="width: 40%;">Resolution Step</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Tunnel URL expired or restarted</strong></td>
+                    <td>Quick Tunnels (<code>npx cloudflared</code>) generate random domains each run. If the terminal restarts, the URL changes.</td>
+                    <td>Copy the new <code>.trycloudflare.com</code> URL and update <code>ACUMATICA_URL</code> in Cloudflare Worker settings. Or configure a persistent Named Tunnel.</td>
+                </tr>
+                <tr>
+                    <td><strong>502 Bad Gateway / Connection Refused</strong></td>
+                    <td>IIS is not listening on <code>localhost:80</code> or the Acumatica application pool is stopped.</td>
+                    <td>Open command prompt as admin and run <code>iisreset</code>. Verify you can access <code>http://localhost/Acumatica26R2</code> directly in your browser.</td>
+                </tr>
+                <tr>
+                    <td><strong>Redirect URI Mismatch (`invalid_grant`)</strong></td>
+                    <td>The redirect URI in SM303010 doesn't match the Worker URL.</td>
+                    <td>Verify SM303010 contains exactly <code>https://&lt;worker-domain&gt;/callback</code> with no trailing slash or whitespace.</td>
+                </tr>
+                <tr>
+                    <td><strong>401 Unauthorized / Access Gate Denied</strong></td>
+                    <td>The user does not have permission to read the canary GI <code>MCPAccess</code>.</td>
+                    <td>In Acumatica SM208000, ensure <code>MCPAccess</code> has <strong>Expose via OData</strong> checked and the user has read permissions.</td>
+                </tr>
+                <tr>
+                    <td><strong>OData Filter Refusal on Inquiries</strong></td>
+                    <td>Acumatica does not support <code>$filter</code> on calculated expression columns (columns starting with <code>=</code>).</td>
+                    <td>Filter on stored database fields instead of formula/switch columns, or filter client-side in the AI prompt.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Section: Permanent Named Tunnel Option -->
+    <div class="section">
+        <h2>8. Advanced Tip: Setting Up a Permanent Named Tunnel</h2>
+        <p>
+            If you want a static URL that never changes when your machine reboots, set up a free Cloudflare Named Tunnel:
+        </p>
+        <pre><code># 1. Login to Cloudflare CLI
+cloudflared tunnel login
+
+# 2. Create a persistent named tunnel (e.g. dev-acumatica)
+cloudflared tunnel create dev-acumatica
+
+# 3. Route your domain (e.g. dev-acumatica.yourdomain.com) to the tunnel
+cloudflared tunnel route dns dev-acumatica dev-acumatica.yourdomain.com
+
+# 4. Run the tunnel pointing to localhost
+cloudflared tunnel run --url http://localhost dev-acumatica</code></pre>
+        <p>With a named tunnel, your <code>ACUMATICA_URL</code> remains constant (e.g. <code>https://dev-acumatica.yourdomain.com/Acumatica26R2</code>), eliminating the need to update Cloudflare variables upon terminal restart.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-note">
+        <div>Acumatica xRP Framework & Cloudflare MCP Integration</div>
+        <div>For questions, contact your internal Acumatica MCP Lead</div>
+    </div>
+
+</body>
+</html>

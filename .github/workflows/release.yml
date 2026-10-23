@@ -1,0 +1,128 @@
+# Cut a tagged release without leaving the browser / a Claude Code web session.
+#
+# Web sessions push through a git proxy that only allows BRANCH writes, so a
+# `git push origin 25R2-X.Y.Z` from a session is refused (HTTP 403). This
+# workflow runs INSIDE GitHub Actions, whose GITHUB_TOKEN can write tags
+# directly — no proxy involved. Run it from the repo's Actions tab (or have
+# Claude trigger it via the GitHub API), give it a version, and it creates the
+# annotated tag on the chosen commit plus a matching GitHub Release.
+#
+# TAG SCHEME: this repo tags `<release>-<semver>` — e.g. `25R2-0.41.0` — where
+# the prefix is the targeted Acumatica release (`25R2` = 2025 R2) and the semver
+# is the MCP server's own version. The two move independently: the semver bumps
+# every release, the prefix only when the server is re-pointed at a new
+# Acumatica release. See CLAUDE.md → "Acumatica Version Upgrades". All 64 tags
+# predating this workflow use that form; there has never been a `vX.Y.Z` tag.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to create (e.g. 25R2-0.41.0)"
+        required: true
+      ref:
+        # actions/checkout resolves this as a branch or tag name first, so a
+        # SHORT sha fails with "A branch or tag with the name '...' could not be
+        # found". Pass the full 40-character sha when tagging a specific commit.
+        description: "Branch, tag, or FULL 40-char commit SHA to tag (short SHAs are not resolvable)"
+        required: false
+        default: main
+      notes:
+        description: "Release notes (optional; defaults to this version's CHANGELOG.md section)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0 # full history + tags so the existence check works
+
+      # Inputs are passed via env (never interpolated into the shell) to avoid
+      # script injection from the free-text notes field.
+      - name: Create annotated tag and GitHub Release
+        env:
+          TAG: ${{ inputs.tag }}
+          REF: ${{ inputs.ref }}
+          NOTES: ${{ inputs.notes }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Validate format: <NN>R<N>-MAJOR.MINOR.PATCH, this repo's tag scheme
+          # (see the header comment). Rejecting anything else keeps `git tag
+          # --sort=-v:refname` ordering the release history correctly.
+          if [[ ! "$TAG" =~ ^[0-9]{2}R[0-9]-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' must look like <release>-X.Y.Z (e.g. 25R2-0.41.0) — the Acumatica release prefix followed by the MCP server version."
+            exit 1
+          fi
+
+          # Guard against a tag that disagrees with the version in the tree.
+          # The workflow deliberately never moves a published tag, so a wrong
+          # one is expensive to walk back; catching it here costs nothing.
+          # CLAUDE.md's release checklist keeps package.json, CLAUDE.md,
+          # src/index.ts, src/docs/docs-handler.ts and docs/tool-reference.md in
+          # sync, and package.json is the machine-readable one.
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${TAG#*-}" != "$PKG_VERSION" ]; then
+            echo "::error::Tag '$TAG' implies version ${TAG#*-}, but package.json on '$REF' says $PKG_VERSION. Bump the version strings (CLAUDE.md → Commit / Push / Tag Checklist) and push before tagging."
+            exit 1
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Idempotent + safe: create the tag if missing, never MOVE an existing
+          # one (published version tags are immutable). Either way ensure the
+          # matching GitHub Release exists, so a re-run can finish a partial job.
+          if [ -n "$(git ls-remote --tags origin "refs/tags/$TAG")" ]; then
+            echo "::notice::Tag $TAG already on origin — leaving it in place (not moved)."
+          else
+            git tag -a "$TAG" -m "$TAG"
+            git push origin "refs/tags/$TAG"
+            echo "::notice::Created tag $TAG at $(git rev-parse --short "$TAG")."
+          fi
+
+          # Release notes: explicit `notes` input wins; otherwise pull this
+          # version's section out of CHANGELOG.md, which the release checklist
+          # requires be written anyway (CLAUDE.md → Commit / Push / Tag
+          # Checklist). Read via --notes-file, not --notes: the section is
+          # multi-line Markdown and must not go through shell interpolation.
+          #
+          # Extraction matches the `## [X.Y.Z] - DATE` heading by literal prefix
+          # (index(), not regex, so the brackets and dots need no escaping) and
+          # stops at the next `## [` — i.e. the previous release.
+          NOTES_FILE="$RUNNER_TEMP/release-notes.md"
+          if [ -n "${NOTES:-}" ]; then
+            printf '%s\n' "$NOTES" > "$NOTES_FILE"
+            echo "::notice::Using the notes supplied to the workflow."
+          else
+            awk -v p="## [${TAG#*-}]" '
+              index($0, p) == 1 { inside = 1; next }
+              inside && /^## \[/ { exit }
+              inside { print }
+            ' CHANGELOG.md \
+              | awk 'NF { blanks = 0; found = 1 } !NF { blanks++ } found { if (NF) { while (blanks-- > 0) print ""; print } }' \
+              > "$NOTES_FILE"
+
+            if [ -s "$NOTES_FILE" ]; then
+              echo "::notice::Release notes taken from the CHANGELOG.md section for ${TAG#*-} ($(wc -l < "$NOTES_FILE") lines)."
+            else
+              # Don't block the release on a missing entry — say so loudly instead.
+              echo "::warning::No '## [${TAG#*-}]' section found in CHANGELOG.md; falling back to a bare title."
+              printf 'Release %s\n' "$TAG" > "$NOTES_FILE"
+            fi
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::GitHub Release $TAG already exists — nothing to do."
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file "$NOTES_FILE"
+            echo "::notice::Created GitHub Release $TAG."
+          fi
