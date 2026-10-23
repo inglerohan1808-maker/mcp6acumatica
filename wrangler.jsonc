@@ -52,14 +52,15 @@
 	//     can't alias both to one, and both default to the Worker name, so
 	//     give them DISTINCT names (e.g. mcp4acumatica-app and
 	//     mcp4acumatica-oauth) or provisioning fails on a title collision.
+	// Configuration: Production KV namespace IDs for mcp6acumatica
 	"kv_namespaces": [
 		{
 			"binding": "TOKEN_STORE",
-			"id": ""
+			"id": "50958185d196462c8e0755d6f8121ce2"
 		},
 		{
 			"binding": "OAUTH_KV",
-			"id": ""
+			"id": "f40addaba8a74204a3ef7697fb8c0c45"
 		}
 	],
 
@@ -131,24 +132,21 @@
 		}
 	],
 
-	// R2 buckets. The Deploy-to-Cloudflare button creates these automatically;
-	// setup.sh creates them via `wrangler r2 bucket create`.
+	// R2 buckets. Configured with mcp6acumatica buckets
 	"r2_buckets": [
 		// Long-term audit log storage via Logpush.
 		{
 			"binding": "mcp4acumatica_logs",
-			"bucket_name": "mcp4acumatica-logs",
-			"remote": true
+			"bucket_name": "mcp6acumatica-logs",
+			"remote": true,
+			"preview_bucket_name": "mcp6acumatica-logs"
 		},
-		// Schema-knowledge indexes (schema-index.json, etc.) read by the
-		// acumatica_search_schema / _get_schema_entity / _list_schema_entities
-		// tools. Built offline by scripts/ and uploaded with `npm run upload-index`
-		// (or auto by setup.sh after deploy when swagger.json is present).
-		// Optional — those tools degrade gracefully when this is empty.
+		// Schema-knowledge indexes (schema-index.json, etc.) read by schema discovery tools.
 		{
 			"binding": "INDEX_STORE",
-			"bucket_name": "mcp4acumatica-index",
-			"remote": true
+			"bucket_name": "mcp6acumatica-index",
+			"remote": true,
+			"preview_bucket_name": "mcp6acumatica-index"
 		}
 	]
 }
