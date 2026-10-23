@@ -17,7 +17,8 @@
 // Cloudflare dashboard:
 //   Workers & Pages → mcp4acumatica → Settings → Variables and Secrets
 {
-	"name": "mcp4acumatica",
+// Configuration: Worker name matches Cloudflare deployment 'mcp6acumatica' and connects to local Acumatica via cloudflared tunnel
+	"name": "mcp6acumatica",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-01",
 	"compatibility_flags": [
@@ -28,8 +29,8 @@
 	// Acumatica instance configuration. Edit these for your deployment
 	// (or leave the placeholders and override via the dashboard after deploy).
 	"vars": {
-		"ACUMATICA_URL": "https://your-instance.acumatica.com",
-		"ACUMATICA_TENANT": "YourTenant",
+		"ACUMATICA_URL": "https://announcement-auction-classic-magazines.trycloudflare.com/Acumatica26R2",
+		"ACUMATICA_TENANT": "Company",
 		"ACUMATICA_ENDPOINT_VERSION": "25.200.001",
 		"ACUMATICA_ENDPOINT_NAME": "Default",
 		"ACUMATICA_MAX_RECORDS": "1000",
