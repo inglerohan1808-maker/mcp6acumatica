@@ -477,4 +477,46 @@ export const GETTER_TOOLS: GetterToolSpec[] = [
     ],
     expand: "BatchMaterials,BatchProcessSteps",
   },
+  // Feature: PMS Batch Order details and materials getters.
+  // Added dedicated single-record getters for shop-floor batch details and component materials.
+  {
+    name: "acumatica_get_batch_details",
+    description: "Retrieve production batch details by batch number and optional batch type. Returns status, formula ID, planned/actual quantities, dates, materials, and process steps.",
+    entity: "EWPMBatch",
+    params: [
+      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
+      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or acumatica_list_entities with entityName='EWPMBatch' to look up." },
+    ],
+    expand: "BatchMaterials,BatchProcessSteps",
+  },
+  {
+    name: "acumatica_get_batch_materials",
+    description: "Retrieve the list of required and dispensed materials/components for a production batch order. Returns inventory ID, description, planned quantity, actual quantity, lot/serial numbers, and step allocations.",
+    entity: "EWPMBatch",
+    params: [
+      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
+      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001')." },
+    ],
+    expand: "BatchMaterials",
+  },
+  // Feature: PMS Super Batch getters.
+  // Added single-record getters for Super Batch header, linked child batches, and finished goods items.
+  {
+    name: "acumatica_get_superbatch_details",
+    description: "Retrieve Process Manufacturing (PMS) Super Batch details by Super Batch ID. Returns header specifications (super batch ID, description, status, dates, totals) and linked child batches and finished goods.",
+    entity: "EWPMSuperBatch",
+    params: [
+      { name: "superBatchID", describe: "Super Batch ID (e.g. 'SB000001'). If unknown, use inquiry 'EWPM-SuperBatch' or acumatica_list_entities with entityName='EWPMSuperBatch' to look up." },
+    ],
+    expand: "Details,FGItems",
+  },
+  {
+    name: "acumatica_get_linked_child_batches",
+    description: "Retrieve all linked child production batches (sub-batches) under a Process Manufacturing (PMS) Super Batch order. Returns child batch IDs, formula IDs, inventory items, planned quantities, order types, and production statuses.",
+    entity: "EWPMSuperBatch",
+    params: [
+      { name: "superBatchID", describe: "Super Batch ID (e.g. 'SB000001')." },
+    ],
+    expand: "Details",
+  },
 ];

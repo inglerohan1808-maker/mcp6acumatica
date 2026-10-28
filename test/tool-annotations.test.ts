@@ -55,6 +55,11 @@ test("titles", () => {
   // Verification: Verify batch ticket tool titles format correctly with proper casing.
   assert.equal(titleFromName("acumatica_get_batch_ticket_data"), "Get Batch Ticket Data");
   assert.equal(titleFromName("acumatica_generate_batch_ticket"), "Generate Batch Ticket");
+  // Verification: Verify Batch and Super Batch tool titles format correctly.
+  assert.equal(titleFromName("acumatica_get_batch_details"), "Get Batch Details");
+  assert.equal(titleFromName("acumatica_get_batch_materials"), "Get Batch Materials");
+  assert.equal(titleFromName("acumatica_get_superbatch_details"), "Get Superbatch Details");
+  assert.equal(titleFromName("acumatica_get_linked_child_batches"), "Get Linked Child Batches");
 });
 
 test("writesEnabled matches runWriter kill-switch rule", () => {
