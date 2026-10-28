@@ -29,7 +29,10 @@
 	// Acumatica instance configuration. Edit these for your deployment
 	// (or leave the placeholders and override via the dashboard after deploy).
 	"vars": {
-		"ACUMATICA_URL": "https://<new-random-words>.trycloudflare.com/Acumatica26R2",
+		// Old logic commented because the previous trycloudflare quick tunnel expired.
+		// "ACUMATICA_URL": "https://announcement-auction-classic-magazines.trycloudflare.com/Acumatica26R2",
+		// Fix: Point to active Cloudflare tunnel forwarding to local Acumatica instance.
+		"ACUMATICA_URL": "https://temp-construction-contributors-reduction.trycloudflare.com/Acumatica26R2",
 		"ACUMATICA_TENANT": "Company",
 		// Old logic commented because extended endpoint was created as version 25.200.002 in Acumatica.
 		// "ACUMATICA_ENDPOINT_VERSION": "25.200.001",

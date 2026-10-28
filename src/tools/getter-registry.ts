@@ -465,4 +465,16 @@ export const GETTER_TOOLS: GetterToolSpec[] = [
     ],
     expand: "BatchMaterials,BatchProcessSteps",
   },
+  // Feature: PMS Batch Ticket data getter.
+  // Enables AI assistant to retrieve raw structured traveler data including dispensing materials and process routing.
+  {
+    name: "acumatica_get_batch_ticket_data",
+    description: "Retrieve complete Batch Ticket traveler data for a Process Manufacturing (PMS) production batch order. Returns header specifications (order type, batch number, formula, revision, product, status, dates, quantities), materials dispensing list (components, required/actual quantities, lot numbers, step assignments), and manufacturing process steps/routing instructions.",
+    entity: "EWPMBatch",
+    params: [
+      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX' (Mixing), 'FL' (Filling), 'AS' (Assembly).", default: "MX" },
+      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or 'EWPM-BatchTicket' to find." },
+    ],
+    expand: "BatchMaterials,BatchProcessSteps",
+  },
 ];

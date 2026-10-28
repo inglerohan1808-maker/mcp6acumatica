@@ -19,6 +19,8 @@ import {
   handleListSchemaEntities,
 } from "./tools/schema-discovery";
 import { handleExplainGiXml } from "./tools/gi-explain";
+// Feature: PMS Batch Ticket generator tool.
+import { handleGenerateBatchTicket } from "./tools/batch-ticket";
 import { annotationsFor, writesEnabled } from "./tools/tool-annotations";
 import { handleSearchDocs, handleGetDocSection } from "./tools/docs-tools";
 import { indexExists, INDEX_KEYS } from "./lib/index-store";
@@ -497,6 +499,30 @@ export class AcumaticaMcpServer extends McpAgent<Env, Record<string, unknown>, A
           () => handleExplainGiXml({ xml }),
           "acumatica_explain_gi_xml",
           { xmlLength: xml?.length ?? 0 }
+        );
+      }
+    );
+
+    // Feature: PMS Batch Ticket Traveler generator.
+    // Formats a complete printable traveler checklist and provides a direct link to the Acumatica report.
+    this.tool(
+      "acumatica_generate_batch_ticket",
+      "Generate and format a complete, printable manufacturing Batch Ticket traveler for a Process Manufacturing (PMS) production batch order. Returns a formatted Markdown document containing batch header specifications, materials dispensing checklist (components, lot numbers, quantities), process routing instructions (operations, work centers, machines, times), quality sign-off sections, and a direct link to the Acumatica report.",
+      {
+        batchNbr: z
+          .string()
+          .describe("Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or 'EWPM-BatchTicket' to find."),
+        batchType: z
+          .string()
+          .optional()
+          .default("MX")
+          .describe("Batch order type (optional; defaults to 'MX'). Common values: 'MX' (Mixing), 'FL' (Filling), 'AS' (Assembly)."),
+      },
+      async ({ batchNbr, batchType }) => {
+        return this.callTool(
+          () => handleGenerateBatchTicket(this.appEnv, this.props.acumaticaUsername, { batchNbr, batchType }),
+          "acumatica_generate_batch_ticket",
+          { batchNbr, batchType }
         );
       }
     );

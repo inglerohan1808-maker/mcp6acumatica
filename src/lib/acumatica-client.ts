@@ -36,13 +36,22 @@ function buildQueryUrl(base: string, query: Record<string, string>): string {
 }
 
 export class AcumaticaApiError extends Error {
+  statusCode: number;
+  body: string;
+
+  // Fix: Node experimental-strip-types runner does not support TypeScript constructor parameter properties.
+  // Converted to explicit field declarations and assignments to ensure compatibility with unit tests.
+  // Old constructor commented:
+  // constructor(public statusCode: number, public body: string, message: string) { super(message); this.name = "AcumaticaApiError"; }
   constructor(
-    public statusCode: number,
-    public body: string,
+    statusCode: number,
+    body: string,
     message: string
   ) {
     super(message);
     this.name = "AcumaticaApiError";
+    this.statusCode = statusCode;
+    this.body = body;
   }
 }
 

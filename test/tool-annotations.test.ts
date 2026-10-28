@@ -52,6 +52,9 @@ test("titles", () => {
   assert.equal(titleFromName("acumatica_explain_gi_xml"), "Explain GI XML");
   // Verification: Verify PMS EWPM acronym renders in uppercase for AI tool title.
   assert.equal(titleFromName("acumatica_get_ewpm_formula"), "Get EWPM Formula");
+  // Verification: Verify batch ticket tool titles format correctly with proper casing.
+  assert.equal(titleFromName("acumatica_get_batch_ticket_data"), "Get Batch Ticket Data");
+  assert.equal(titleFromName("acumatica_generate_batch_ticket"), "Generate Batch Ticket");
 });
 
 test("writesEnabled matches runWriter kill-switch rule", () => {
