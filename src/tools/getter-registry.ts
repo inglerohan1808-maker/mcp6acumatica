@@ -455,50 +455,53 @@ export const GETTER_TOOLS: GetterToolSpec[] = [
     ],
     expand: "Materials,ProcessSteps",
   },
-  {
-    name: "acumatica_get_ewpm_batch",
-    description: "Retrieve a Process Manufacturing (PMS) production batch record by batch number and optional batch type. Returns status, formula ID, plan/actual quantities, dates, batch materials, and batch process steps.",
-    entity: "EWPMBatch",
-    params: [
-      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
-      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or acumatica_list_entities with entityName='EWPMBatch' to look up." },
-    ],
-    expand: "BatchMaterials,BatchProcessSteps",
-  },
+  // Old redundant batch getter commented: consolidated into single unified getter acumatica_get_batch_details.
+  // {
+  //   name: "acumatica_get_ewpm_batch",
+  //   description: "Retrieve a Process Manufacturing (PMS) production batch record by batch number and optional batch type. Returns status, formula ID, plan/actual quantities, dates, batch materials, and batch process steps.",
+  //   entity: "EWPMBatch",
+  //   params: [
+  //     { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
+  //     { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or acumatica_list_entities with entityName='EWPMBatch' to look up." },
+  //   ],
+  //   expand: "BatchMaterials,BatchProcessSteps",
+  // },
   // Feature: PMS Batch Ticket data getter.
   // Enables AI assistant to retrieve raw structured traveler data including dispensing materials and process routing.
+  // Old redundant getter commented because traveler data is retrieved by the unified acumatica_get_batch_details tool.
+  // {
+  //   name: "acumatica_get_batch_ticket_data",
+  //   description: "Retrieve complete Batch Ticket traveler data for a Process Manufacturing (PMS) production batch order. Returns header specifications (order type, batch number, formula, revision, product, status, dates, quantities), materials dispensing list (components, required/actual quantities, lot numbers, step assignments), and manufacturing process steps/routing instructions.",
+  //   entity: "EWPMBatch",
+  //   params: [
+  //     { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX' (Mixing), 'FL' (Filling), 'AS' (Assembly).", default: "MX" },
+  //     { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or 'EWPM-BatchTicket' to find." },
+  //   ],
+  //   expand: "BatchMaterials,BatchProcessSteps",
+  // },
+  // Feature: PMS Unified Batch Order getter.
+  // Consolidates batch order queries into a single comprehensive tool returning header, materials, routing steps, and finished goods.
   {
-    name: "acumatica_get_batch_ticket_data",
-    description: "Retrieve complete Batch Ticket traveler data for a Process Manufacturing (PMS) production batch order. Returns header specifications (order type, batch number, formula, revision, product, status, dates, quantities), materials dispensing list (components, required/actual quantities, lot numbers, step assignments), and manufacturing process steps/routing instructions.",
+    name: "acumatica_get_batch_details",
+    description: "Retrieve complete details for a Process Manufacturing (PMS) production batch order by batch number and optional batch type. Returns header specifications (batch number, formula, revision, status, planned/actual dates and quantities), bill of materials (components, planned/actual quantities, lot numbers, step allocations), process routing instructions (operations, work centers, machines, times), and finished goods.",
     entity: "EWPMBatch",
     params: [
       { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX' (Mixing), 'FL' (Filling), 'AS' (Assembly).", default: "MX" },
-      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or 'EWPM-BatchTicket' to find." },
-    ],
-    expand: "BatchMaterials,BatchProcessSteps",
-  },
-  // Feature: PMS Batch Order details and materials getters.
-  // Added dedicated single-record getters for shop-floor batch details and component materials.
-  {
-    name: "acumatica_get_batch_details",
-    description: "Retrieve production batch details by batch number and optional batch type. Returns status, formula ID, planned/actual quantities, dates, materials, and process steps.",
-    entity: "EWPMBatch",
-    params: [
-      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
       { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001'). If unknown, use inquiry 'EWPM-BatchEntry' or acumatica_list_entities with entityName='EWPMBatch' to look up." },
     ],
-    expand: "BatchMaterials,BatchProcessSteps",
+    expand: "BatchMaterials,BatchProcessSteps,BatchFG",
   },
-  {
-    name: "acumatica_get_batch_materials",
-    description: "Retrieve the list of required and dispensed materials/components for a production batch order. Returns inventory ID, description, planned quantity, actual quantity, lot/serial numbers, and step allocations.",
-    entity: "EWPMBatch",
-    params: [
-      { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
-      { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001')." },
-    ],
-    expand: "BatchMaterials",
-  },
+  // Old redundant getter commented because materials are included in acumatica_get_batch_details.
+  // {
+  //   name: "acumatica_get_batch_materials",
+  //   description: "Retrieve the list of required and dispensed materials/components for a production batch order. Returns inventory ID, description, planned quantity, actual quantity, lot/serial numbers, and step allocations.",
+  //   entity: "EWPMBatch",
+  //   params: [
+  //     { name: "batchType", describe: "Batch order type (optional; defaults to 'MX'). Common values: 'MX', 'FL', 'AS'.", default: "MX" },
+  //     { name: "batchNbr", describe: "Batch order number (e.g. 'BAT000001')." },
+  //   ],
+  //   expand: "BatchMaterials",
+  // },
   // Feature: PMS Super Batch getters.
   // Added single-record getters for Super Batch header, linked child batches, and finished goods items.
   {
